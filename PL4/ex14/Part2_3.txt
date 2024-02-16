@@ -1,0 +1,137 @@
+PSEUDOCODE
+
+Define N_VALUES as 10
+
+Declare semM, semAX, and semBX as pointers to sem_t structures
+Declare shared_data as a pointer to shared_data_type structure
+
+Define shared_data_type structure:
+    Declare data as an array of integers with size N_VALUES
+    Declare index as an integer
+
+Define AX function:
+    Declare i and indexP as integers
+    Enter an infinite loop:
+        Generate random values and store them in rValues array
+        Wait on the semaphore semAX using sem_wait
+
+        Wait on the semaphore semM using sem_wait
+        Assign shared_data->index to indexP
+        If indexP is greater than N_VALUES - 1:
+            Release the semaphore semM using sem_post
+            Release the semaphore semAX using sem_post
+            Break out of the loop
+
+        Print "Index <indexP>"
+        Print "Value <rValues[indexP]>"
+
+        Assign rValues[indexP] to shared_data->data[indexP]
+        Increment shared_data->index by 1
+        Release the semaphore semM using sem_post
+        Sleep for 1 second
+        Release the semaphore semAX using sem_post
+        Sleep for 5 seconds
+
+    Exit the AX function
+
+Define BX function:
+    Declare i and indexP as integers
+    Enter an infinite loop:
+        Generate random values and store them in rValues array
+        Wait on the semaphore semBX using sem_wait
+
+        Wait on the semaphore semM using sem_wait
+        Assign shared_data->index to indexP
+        If indexP is greater than N_VALUES - 1:
+            Release the semaphore semM using sem_post
+            Release the semaphore semBX using sem_post
+            Break out of the loop
+
+        Print "Index <indexP>"
+        Print "Value <rValues[indexP]>"
+
+        Assign rValues[indexP] to shared_data->data[indexP]
+        Increment shared_data->index by 1
+        Release the semaphore semM using sem_post
+        Sleep for 1 second
+        Release the semaphore semBX using sem_post
+        Sleep for 6 seconds
+
+    Exit the BX function
+
+Define main function:
+    Declare fd and data_size as integers
+    Create a shared memory object using shm_open:
+        Use "/pl4ex14" as the name of the shared memory object
+        Use O_CREAT | O_RDWR flags to create the shared memory object if it doesn't exist and open it for reading and writing
+        Set permissions for the shared memory object using S_IRUSR | S_IWUSR
+        Store the file descriptor returned by shm_open in fd
+    Set the size of the shared memory object using ftruncate with fd and data_size
+
+    Map the shared memory object into the process's address space using mmap:
+        Pass NULL as the starting address
+        Pass data_size as the length of the mapping
+        Set PROT_READ | PROT_WRITE as the memory protection
+        Set MAP_SHARED as the type of the mapping
+        Pass fd and 0 as the file descriptor and offset respectively
+        Store the pointer to the mapped memory in shared_data
+
+    Create semaphores using sem_open:
+        Use "semM" as the name of the semaphore for mutual exclusion
+        Use "semAX" as the name of the semaphore for AX process synchronization
+        Use "semBX" as the name of the semaphore for BX process synchronization
+        Use O_CREAT flag to create the semaphores if they don't exist
+        Set permissions for the semaphores using 0644
+        Initialize semM to 0, semAX to 0, and semBX to 0
+        Store the semaphore pointers returned by sem_open in semM, semAX, and semBX
+
+    Initialize shared_data->index to 0
+
+    Release the semaphores semAX, semBX, and semM using sem_post
+
+    Declare i as an integer
+    Declare pid as a pid_t
+
+    Create 5 child processes:
+        Use a for loop with i ranging from 0 to 4
+        Inside the loop, fork a child process and assign its process ID to pid
+        If i is less than 3 and pid is 0:
+            Call AX function
+        Else if pid is 0:
+            Call BX function
+
+    Declare flag as an integer
+    Enter a do-while loop:
+        Wait on the semaphore semM using sem_wait
+        Assign shared_data->index to flag
+        Release the semaphore semM using sem_post
+        Sleep for 1 second
+        Continue the loop if flag is less than N_VALUES - 1
+
+    Print the contents of shared_data->data array
+
+    Close semaphores using sem_close for semM, semAX, and semBX
+
+    Unlink semaphores using sem_unlink:
+        Use "semM" as the name of the semaphore to unlink
+        Use "semAX" as the name of the semaphore to unlink
+        Use "semBX" as the name of the semaphore to unlink
+
+    Unmap the shared memory using munmap:
+        Pass shared_data as the starting address of the mapped memory
+        Pass data_size as the length of the mapped memory
+
+    Unlink the shared memory object using shm_unlink:
+        Use "/pl4ex14" as the name of the shared memory object to unlink
+
+    Return 0 to indicate successful execution of the program
+
+
+
+PATTERN 
+
+The code demonstrates active waiting.
+Both the AX and BX processes 
+enter an infinite loop and 
+periodically check the shared data 
+index to determine if they can proceed with their tasks. 

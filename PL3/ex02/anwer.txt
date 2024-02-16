@@ -1,0 +1,1 @@
+We can use semaphores or even use the active waiting to ensure we respect the memory limits.

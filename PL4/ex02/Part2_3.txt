@@ -1,0 +1,86 @@
+PSEUDOCODE
+Define NUMBER_STRINGS as 50
+Define STRING_SIZE as 80
+
+Define shared_data_type as a structure with:
+    strings array of size NUMBER_STRINGS and STRING_SIZE elements
+    index variable of type integer
+
+Define main function:
+    Declare variables: fd, data_size as an integer
+    Declare shared_data as a pointer to shared_data_type structure
+    Declare sem as a pointer to sem_t structure
+    Declare pid as a pid_t
+
+    Set data_size to the size of shared_data_type structure
+
+    Create and open a shared memory object with shm_open:
+        Use "/pl4ex02" as the name of the shared memory object
+        Open it with flags O_CREAT (create if it doesn't exist) and O_RDWR (read and write access)
+        Set permissions for the shared memory object using S_IRUSR (read permission for the owner) and S_IWUSR (write permission for the owner)
+        Store the file descriptor returned by shm_open in fd
+
+    Resize the shared memory object to the size of shared_data_type structure using ftruncate:
+        Pass the file descriptor (fd) and data_size as arguments to ftruncate
+
+    Map the shared memory object into the process's address space using mmap:
+        Pass NULL as the starting address (let the system choose the address)
+        Pass data_size as the length of the mapping
+        Set protection flags to PROT_READ (read access) and PROT_WRITE (write access)
+        Set flags to MAP_SHARED (shared mapping)
+        Pass the file descriptor (fd) and 0 as the offset to mmap
+        Store the mapped address returned by mmap in shared_data
+
+    Create a semaphore using sem_open:
+        Use "sem" as the name of the semaphore
+        Use O_CREAT flag to create the semaphore if it doesn't exist
+        Set permissions for the semaphore using 0644
+        Store the semaphore pointer returned by sem_open in sem
+        If sem_open returns SEM_FAILED, print an error message and exit the program
+
+    Set the index variable in shared_data to 0
+
+    Fork a child process and store the returned process ID in pid
+
+    If pid equals 0 (child process):
+        Enter an infinite loop:
+            Check if the index in shared_data is equal to NUMBER_STRINGS
+                If true, release the semaphore using sem_post and exit the child process
+            Use sprintf to write a formatted string into shared_data->strings[index]:
+                "I'm the Father - with PID %d\n", getppid()
+            Print the string stored in shared_data->strings[index]
+            Increment the index in shared_data
+
+    If pid does not equal 0 (parent process):
+        Wait on the semaphore using sem_wait
+
+        Unmap the shared memory object from the process's address space using munmap:
+            Pass the mapped address (shared_data) and the size of shared_data_type structure to munmap
+            If munmap returns a negative value, exit the program
+
+        Unlink the shared memory object using shm_unlink:
+            Pass "/pl4ex02" as the name of the shared memory object to shm_unlink
+            If shm_unlink returns a negative value, exit the program
+
+        Unlink the semaphore using sem_unlink:
+            Pass "sem" as the name of the semaphore to sem_unlink
+            If sem_unlink returns a negative value, exit the program
+
+    Return 0 to indicate successful execution of the program
+
+
+PATTERN 
+
+The code exhibits active waiting.
+In the child process (created using fork()), 
+there is a while loop that continually checks 
+the value of shared_data->index. 
+If the value of shared_data->index 
+reaches NUMBER_STRINGS, the child process 
+releases the semaphore sem using 
+sem_post(sem) and then exits. 
+This behavior suggests that the child 
+process actively waits for the condition 
+(shared_data->index == NUMBER_STRINGS) 
+to be satisfied before releasing the semaphore 
+and terminating.

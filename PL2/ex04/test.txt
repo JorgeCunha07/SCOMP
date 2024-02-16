@@ -1,0 +1,4 @@
+Write a program that creates a child process and establishes with it a communicating channel through a pipe. 
+The parent process should send the contents of a text file to its child through the pipe. 
+The child should print all the received data.
+The parent must wait for its child to end.

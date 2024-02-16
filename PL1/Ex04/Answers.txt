@@ -1,0 +1,9 @@
+a)
+Apenas a variável a.
+b)
+         fork       
+     /          \     
+b = pid filho  b = 0
+c = x          c = b do processo pai 
+d = y          d = x
+a = 5          a = 5

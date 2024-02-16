@@ -1,0 +1,79 @@
+PSEUDOCODE
+
+Define constants:
+    - Define NORMAL_CLIENT as 1
+    - Define SPECIAL_CLIENT as 2
+    - Define VIP_CLIENT as 3
+    - Define CLIENTS as the number of clients
+    - Define MAX_CAPACITY as the maximum capacity
+
+Declare variables:
+    - Declare pid_t variable: p
+    - Declare integer: fd
+    - Declare integers: data_size, typeClient
+    - Declare pointers to info struct: semaforo1, semaforo2, sem_Shield, sem_Shield_Vip, sem_Shield_normal, sem_Shield_data
+
+Initialize random seed:
+    - Use srand(time(NULL)) to initialize the random number generator
+
+Create shared memory for "sharedMemory":
+    - Create shared memory for "sharedMemory" using shm_open with read-write permissions
+    - Truncate the shared memory object to the size of an info struct
+    - Map the shared memory object into the address space of the process
+    - Initialize the fields of the info struct to 0
+
+Create semaphores:
+    - Create "sem_clientsIN" semaphore using sem_open with initial value 1
+    - Create "sem_clientsOut" semaphore using sem_open with initial value 0
+    - Create "sem_Shield" semaphore using sem_open with initial value 0
+    - Create "sem_ShieldVip" semaphore using sem_open with initial value 0
+    - Create "sem_ShieldNormal" semaphore using sem_open with initial value 0
+
+Create client processes:
+    - For i from 0 to CLIENTS:
+        - Set pid as fork()
+        - If pid is 0 (in the child process):
+            - Generate a random value for typeClient (1, 2, or 3)
+            - Wait on "sem_clientsIN" semaphore to synchronize client creation
+            - Increment the "created" field of the info struct by 1
+            - Update the corresponding field (normal, special, vip) based on the typeClient
+            - Post on "sem_clientsIN" semaphore to allow the next client creation
+            - If all clients are created, post on "sem_Shield" semaphore
+            - Wait on "sem_Shield" semaphore to ensure all clients are created
+            - Post on "sem_Shield" semaphore to release other clients
+            - If typeClient is SPECIAL_CLIENT and there are VIP clients, wait on "sem_Shield_Vip" semaphore
+            - If typeClient is NORMAL_CLIENT and there are VIP or special clients, wait on "sem_Shield_normal" semaphore
+            - Wait on "sem_clientsIN" semaphore to synchronize access to the info struct
+            - Start the clock
+            - Update the "total" field of the info struct
+            - Print the corresponding message based on the typeClient
+            - Decrease the corresponding field (normal, special, vip) of the info struct
+            - If there are no more VIP clients, post on "sem_Shield_Vip" semaphore
+            - If there are no more normal clients, post on "sem_Shield_normal" semaphore
+            - If the capacity is reached, post on "sem_clientsOut" semaphore; otherwise, post on "sem_clientsIN" semaphore
+            - Wait on "sem_clientsOut" semaphore to synchronize client exit
+            - Stop the clock and calculate the elapsed time
+            - Print the exit message and the time spent
+            - Decrease the "total" field of the info struct
+            - Post on "sem_clientsIN" semaphore to release other clients
+            - Exit the child process
+
+Wait for all child processes to complete:
+    - For j from 0 to CLIENT
+
+
+PATTERN
+
+In this case, the waiting mechanism used in the code includes a combination of active and passive waiting.
+
+Active Waiting:
+
+The processes actively wait for certain conditions to be satisfied by repeatedly checking those conditions using loops.
+For example, the code uses a loop with the condition while (clientsInfo->created != CLIENTS) to actively wait until all clients are created before proceeding.
+Similarly, there are active waiting loops using conditions like while (clientsInfo->vip != 0) and while (clientsInfo->normal == 0) to wait for specific conditions to be met before allowing certain types of clients to proceed.
+
+Passive Waiting:
+
+The processes rely on external mechanisms, such as semaphores, to wait for events or signals.
+For example, the processes wait on semaphores like sem_Shield, sem_Shield_Vip, sem_Shield_normal, semaforo1, and semaforo2 to be signaled or released before proceeding to the next steps.
+The processes call sem_wait() to passively wait for a semaphore to be available, indicating that they can proceed.

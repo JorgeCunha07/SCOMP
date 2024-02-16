@@ -1,0 +1,54 @@
+PSEUDOCODE
+
+Define ITERATIONS as 15
+
+Define main function:
+    Declare sem as a pointer to sem_t structure
+    Declare pid as a pid_t
+    Declare i as an integer
+
+    Create a semaphore using sem_open:
+        Use "sem" as the name of the semaphore
+        Use O_CREAT flag to create the semaphore if it doesn't exist
+        Set permissions for the semaphore using 0644
+        Store the semaphore pointer returned by sem_open in sem
+        If sem_open returns SEM_FAILED, print an error message and exit the program
+
+    Iterate i from 0 to ITERATIONS - 1:
+        Fork a child process and store the returned process ID in pid
+
+        If pid equals 0 (child process):
+            Print "1st child!"
+            Release the semaphore using sem_post
+            Exit the child process
+
+        Wait on the semaphore using sem_wait in the parent process
+        Wait for the child process to complete using wait(NULL)
+        Print "Father!"
+
+        Fork another child process and store the returned process ID in pid
+
+        If pid equals 0 (child process):
+            Print "2nd child!"
+            Release the semaphore using sem_post
+            Exit the child process
+
+        Wait on the semaphore using sem_wait in the parent process
+        Wait for the child process to complete using wait(NULL)
+        Print a new line
+
+    Unlink the semaphore using sem_unlink:
+        Pass "sem" as the name of the semaphore to sem_unlink
+        If sem_unlink returns a negative value, exit the program
+
+    Return 0 to indicate successful execution of the program
+
+
+PATTERN 
+
+The code also utilizes active waiting.
+Similar to the previous code, 
+this code uses active waiting 
+because the parent process repeatedly 
+checks the availability of the 
+semaphore without yielding the CPU to other processes. 

@@ -1,0 +1,22 @@
+The error "execl: No such file or directory" occurs when the execl() function cannot find the file to execute. In your main.c file, you are trying to execute files with the extension .c. However, .c files are not executable files, they are source code files that need to be compiled first.
+
+To fix this error, you need to compile your .c files first and create executable files that can be executed by the execl() function. You can use a C compiler like gcc to compile your source code files into executable files.
+
+Here are the steps to compile your code:
+
+Open a terminal and navigate to the directory where your source code files are located.
+
+Compile each of your source code files using gcc. For example, to compile Exf1.c, run the following command:
+
+Copy code
+gcc -o Exf1 Exf1.c
+This will create an executable file named Exf1 in the same directory.
+
+Repeat the above step for all your source code files.
+
+Once you have compiled all your source code files, run your main program. For example, if your executable file for main is named main, run the following command:
+
+bash
+Copy code
+./main
+This should execute your program without any errors.

@@ -1,0 +1,48 @@
+PSEUDOCODE
+Declare and initialize variables:
+    - Declare pid_t variable: pid
+    - Declare int variables: fd, data_size, val, r
+    - Declare sem_t pointers: semaforo1, sharedsemaforo, sharedsemaforo2
+
+Access shared memory:
+    - Open the shared memory object using shm_open with read-only permissions
+    - Truncate the shared memory object to the size of an integer
+    - Map the shared memory object into the address space of the process
+
+Create semaphores:
+    - Create semaforo1 using sem_open with initial value 0
+    - Create sharedsemaforo
+    - Create sharedsemaforo2
+
+Create child processes:
+    - For i from 0 to CLIENTS:
+        - Set pid as fork()
+        - If pid is 0 (in the child process):
+            - Repeat the following loop until semaforo1 value is equal to i:
+                - Get the current value of semaforo1 using sem_getvalue
+            - Wait on sharedsemaforo for the ticket to be available
+            - Generate a random number r between 1 and 10 (inclusive)
+            - Sleep for r seconds
+            - Print the value of the ticket and the client number
+            - Post sharedsemaforo2 to indicate that the ticket has been sold
+            - Post semaforo1 to give permission to the next client
+            - Exit the child process
+
+Wait for all child processes to complete:
+    - For j from 0 to CLIENTS:
+        - Wait for a child process to complete using wait(NULL)
+
+Return 0 to indicate successful execution
+
+PATTERN
+
+The code repeatedly checks the value of the semaphore semaforo1 
+using sem_getvalue(), and it continues to loop until the value becomes equal to i. 
+This loop actively waits for the semaphore value to change, 
+indicating that it's the current client's turn to proceed.
+
+Other parts of the code involve passive waiting, 
+where processes wait for semaphores using sem_wait(), 
+but the primary waiting mechanism is the active waiting loop mentioned above.
+Therefore, the waiting mechanism used in this code can be classified as primarily active waiting.
+

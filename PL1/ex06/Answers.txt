@@ -1,0 +1,8 @@
+a)
+16
+
+b)
+Para obtermos 4 processos filho temos:
+2^2 = 8, 4 processos pai e 4 filho
+Portanto basta mudar o for loop para:
+for(i = 0; i < 2; i++)

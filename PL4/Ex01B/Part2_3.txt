@@ -1,0 +1,63 @@
+PSEUDOCODE
+Initialize variables and resources:
+    - Declare variables: pid, file_read, file_write, read, write, number
+
+Remove existing semaphores:
+    - Call sem_unlink("read")
+    - Call sem_unlink("write")
+
+Create semaphores:
+    - Call sem_open("read", O_CREAT, S_IRUSR|S_IWUSR, 1)
+        - If sem_open fails, print error message and exit
+    - Call sem_open("write", O_CREAT, S_IRUSR|S_IWUSR, 1)
+        - If sem_open fails, print error message and exit
+
+Remove output file:
+    - Call remove("Output.txt")
+        - If remove fails, print error message and exit
+
+Open input and output files:
+    - Set file_read as fopen("Numbers.txt", "r")
+    - Set file_write as fopen("Output.txt", "w")
+        - If either file_open fails, print error message and exit
+
+Create child processes:
+    - Loop for i from 0 to CHILD_PROCESSES
+        - Fork the current process and assign the returned PID to pid
+        - If pid is 0, it's a child process
+            - Enter an infinite loop
+                - Block other processes from reading by calling sem_wait(read)
+                - Read a number from the file using fscanf
+                - If fscanf successfully reads a number
+                    - Allow other processes to read by calling sem_post(read)
+                    - Block other processes from writing by calling sem_wait(write)
+                    - Write the process ID and number to the output file using fprintf
+                    - Allow other processes to write by calling sem_post(write)
+                - Else, if fscanf fails to read a number
+                    - Allow other processes to read by calling sem_post(read)
+                    - Exit the child process
+                        - This allows other processes to terminate if there is nothing more to read
+
+Wait for child processes to finish:
+    - Loop for j from 0 to CHILD_PROCESSES
+        - Call wait(NULL) to wait for any child process to finish
+
+Close file resources:
+    - Close file_read and file_write using fclose
+
+Open and read the output file:
+    - Set file_read as fopen("Output.txt", "r")
+    - Create a character array called linha with a size of 100
+    - Print "Leitura do Ficheiro:"
+    - Loop while fscanf reads a line from file_read into the linha array
+        - Print the line
+
+Close the file and return 0 to indicate successful execution
+
+PATTERN
+
+In the given code, the main process creates multiple child processes using fork(). 
+Each child process enters a while loop and performs active waiting by repeatedly checking if there is a line to read from the input file.
+The waiting mechanism in this code can be considered active waiting because the 
+child processes actively check for the availability of input and make decisions based on that. 
+They do not passively wait for an external event or notification

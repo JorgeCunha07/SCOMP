@@ -1,0 +1,49 @@
+PSEUDOCODE
+
+Define main function:
+    Declare semP and semC as pointers to sem_t structure
+    Create two semaphores using sem_open:
+        Use "semP" as the name of the first semaphore
+        Use "semC" as the name of the second semaphore
+        Use O_CREAT flag to create the semaphores if they don't exist
+        Set permissions for the semaphores using 0644
+        Store the semaphore pointers returned by sem_open in semP and semC
+        If any of the semaphores fail to open, print an error message and exit the program
+
+    Fork a child process and store the returned process ID in pid
+
+    If pid equals 0 (child process):
+        Enter an infinite loop:
+            Wait on the semaphore semC using sem_wait
+            Print "C" to the standard output
+            Flush the standard output buffer using fflush
+            Release the semaphore semP using sem_post
+        Exit the child process
+
+    In the parent process:
+        Enter an infinite loop:
+            Wait on the semaphore semP using sem_wait
+            Print "S" to the standard output
+            Flush the standard output buffer using fflush
+            Release the semaphore semC using sem_post
+
+    Unlink the semaphore semP using sem_unlink:
+        Pass "semP" as the name of the semaphore to sem_unlink
+        If sem_unlink returns a negative value, exit the program
+
+    Unlink the semaphore semC using sem_unlink:
+        Pass "semC" as the name of the semaphore to sem_unlink
+        If sem_unlink returns a negative value, exit the program
+
+    Return 0 to indicate successful execution of the program
+
+
+PATTERN 
+
+The code demonstrates 
+an interprocess communication 
+pattern commonly known as "Ping-Pong" 
+or "Ping-Pong Messaging". 
+This pattern involves two processes, 
+in this case, a parent and a child process,
+ repeatedly exchanging control and communication.

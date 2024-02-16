@@ -1,0 +1,61 @@
+PSEUDOCODE
+Initialize variables and resources:
+    - Declare variables: p, output, write, semaforo1, semaforo2, ..., semaforo8
+    - Declare character array: linha
+
+Remove existing semaphores:
+    - Call sem_unlink("semaforo1")
+    - Call sem_unlink("semaforo2")
+    - ...
+    - Call sem_unlink("semaforo8")
+
+Create semaphores:
+    - Call sem_open("semaforo1", O_CREAT, S_IRUSR | S_IWUSR, 1)
+        - If sem_open fails, print error message and exit
+    - Call sem_open("semaforo2", O_CREAT, S_IRUSR | S_IWUSR, 0)
+        - If sem_open fails, print error message and exit
+    - ...
+    - Call sem_open("semaforo8", O_CREAT, S_IRUSR | S_IWUSR, 0)
+        - If sem_open fails, print error message and exit
+
+Remove output file:
+    - Call remove("Output.txt")
+        - If remove fails, print error message and exit
+
+Create output file:
+    - Set write as fopen("Output.txt", "w")
+        - If fopen fails, print error message and exit
+
+Create child processes:
+    - Loop for i from 0 to CHILD_PROCESSES
+        - Set p as fork()
+        - If p is 0, it's a child process
+            - If i is 0, post semaforo1, call writeNumbers(write), and post semaforo2
+            - If i is 1, wait semaforo2, call writeNumbers(write), and post semaforo3
+            - ...
+            - If i is 6, wait semaforo7, call writeNumbers(write), and post semaforo8
+            - If i is 7, wait semaforo8 and call writeNumbers(write)
+
+            - Exit the child process
+
+Wait for child processes to finish:
+    - Loop for j from 0 to CHILD_PROCESSES
+        - Call wait(NULL) to wait for any child process to finish
+
+Open and read the output file:
+    - Set output as fopen("Output.txt", "r")
+        - If fopen fails, print error message and exit
+    - Print "Ficheiro Output.txt"
+    - Loop while fscanf reads a line from output into the linha array
+        - Print the line
+
+Close the file resources:
+    - Close write and output using fclose
+
+Return 0 to indicate successful execution
+
+PATTERN 
+
+The waiting mechanism in this exercise can be considered passive waiting. 
+The child processes wait for specific semaphores to be posted, indicating the completion of previous operations. 
+They do not actively check for availability or perform any active waiting behavior.

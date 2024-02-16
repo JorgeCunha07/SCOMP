@@ -1,0 +1,50 @@
+PSEUDO CODE
+Initialize variables and resources:
+    - Initialize semaphore "sema"
+    - Declare variables: pid, file_read, file_write, sem, number
+
+Remove existing semaphore:
+    - Call sem_unlink("sema")
+
+Create semaphore:
+    - Call sem_open("sema", O_CREAT, S_IRUSR|S_IWUSR, 1)
+        - If sem_open fails, print error message and exit
+
+Remove output file:
+    - Call remove("Output.txt")
+        - If remove fails, print error message and exit
+
+Open input and output files:
+    - Set file_read as fopen("Numbers.txt", "r")
+    - Set file_write as fopen("Output.txt", "w")
+        - If either file_open fails, print error message and exit
+
+Create child processes:
+    - Loop for i from 0 to CHILD_PROCESSES
+        - Fork the current process and assign the returned PID to pid
+        - If pid is 0, it's a child process
+            - Enter an infinite loop
+                - Decrement the semaphore using sem_wait(sem)
+                - Read a number from the file using fscanf
+                - If fscanf successfully reads a number
+                    - Write the process ID and number to the output file using fprintf
+                    - Increment the semaphore using sem_post(sem)
+                - Else, if fscanf fails to read a number
+                    - Increment the semaphore using sem_post(sem)
+                    - Exit the child process
+                        - This allows other processes to terminate if there is nothing more to read
+
+Wait for child processes to finish:
+    - Loop for j from 0 to CHILD_PROCESSES
+        - Call wait(NULL) to wait for any child process to finish
+
+Close file resources:
+    - Close file_read and file_write using fclose
+
+Return 0 to indicate successful execution
+
+PATTERN
+
+The waiting mechanism in this exercise can be considered active waiting 
+because the child processes actively check for the availability of input and make decisions based on that.
+They do not passively wait for an external event or notification.

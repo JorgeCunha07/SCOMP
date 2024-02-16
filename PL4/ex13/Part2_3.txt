@@ -1,0 +1,61 @@
+PSEUDOCODE
+Define constants:
+    - Define TWRITERS as 4
+    - Define TREADERS as 4
+
+Define a structure:
+    - Define a structure named "information" with three integer fields: readers, writers, canRead
+
+Declare and initialize variables:
+    - Declare pid_t variable: p
+    - Declare char array: string[30]
+    - Declare clock_t variables: start, end
+    - Declare integers: fd, fd2, dataSize_info, dataSize_string
+    - Declare sem_t pointers: semaforoString, semaforoInformation
+
+Create shared memory and initialize the structure:
+    - Create shared memory for information using shm_open with read-write permissions
+    - Truncate the shared memory object to the size of information structure
+    - Map the shared memory object into the address space of the process
+    - Initialize the values of the information structure
+
+Create shared memory for the string:
+    - Create shared memory for the string using shm_open with read-write permissions
+    - Truncate the shared memory object to the size of the string array
+    - Map the shared memory object into the address space of the process
+
+Create semaphores:
+    - Create semaforoString using sem_open with initial value 1
+    - Create semaforoInformation using sem_open with initial value 1
+
+Create writer processes:
+    - For i from 0 to TWRITERS:
+        - Set pid as fork()
+        - Start the clock
+        - If pid is 0 (in the child process):
+            - Wait on semaforoString to block access to the string
+            - End the clock
+            - Calculate the duration of the process
+            - Write the process ID and time information to the string
+            - Increment the canRead field of the information structure
+            - Release access to the string by posting on semaforoString
+            - Exit the child process
+
+Create reader processes:
+    - For j from 0 to TREADERS:
+        - Set pid as fork()
+        - If pid is 0 (in the child process):
+            - Sleep for 1 second
+            - Wait until the canRead field of the information structure is nonzero
+            - Read the string from the shared memory
+            - Increment the readers field of the information structure
+            - Print the ID and the string
+            - Print the number of readers
+            - Release access to the information structure by posting on semaforoInformation
+            - Exit the child process
+
+
+PATTERN
+In this case, the waiting mechanism used in the code can be considered as active waiting.
+Active waiting refers to a situation where a process continuously checks a condition or waits for an event to occur actively. 
+In the  code, the reader processes use active waiting to wait for the canRead variable in the info structure to become non-zero before reading the string.

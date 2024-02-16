@@ -1,0 +1,119 @@
+PSEUDOCODE
+
+Define ITERATIONS as 30
+
+Define shared_data_type structure:
+    Declare buffer as an array of integers with size 10
+    Declare size as an integer
+    Declare producer as an integer
+    Declare consumer as an integer
+
+Declare shared_data as a pointer to shared_data_type structure
+Declare sem as a pointer to sem_t structure
+
+Define producer function:
+    Iterate i from 0 to ITERATIONS - 1:
+        Wait on the semaphore sem using sem_wait
+        While shared_data->size equals 10:
+            Release the semaphore sem using sem_post
+            Sleep for 200 milliseconds
+            Wait on the semaphore sem using sem_wait
+
+        Print "Producer writes: <i>"
+        Assign i to shared_data->buffer[shared_data->consumer]
+        Increment shared_data->consumer by 1 modulo 10
+        Increment shared_data->size by 1
+        Release the semaphore sem using sem_post
+        Sleep for 1 second
+
+    Return 0
+
+Define consumer function:
+    Declare flag as an integer
+
+    Enter a loop:
+        Sleep for 2 seconds
+        Wait on the semaphore sem using sem_wait
+        While shared_data->size equals 0:
+            Release the semaphore sem using sem_post
+            Sleep for 200 milliseconds
+            Wait on the semaphore sem using sem_wait
+
+        Print newline and "Consumer reads: <shared_data->buffer[shared_data->producer]>"
+        Increment shared_data->producer by 1 modulo 10
+        Decrement shared_data->size by 1
+        Assign shared_data->size to flag
+        Release the semaphore sem using sem_post
+
+    Return 0
+
+Define main function:
+    Declare fd and data_size as integers
+    Create a shared memory object using shm_open:
+        Use "/pl4ex12" as the name of the shared memory object
+        Use O_CREAT | O_RDWR flags to create the shared memory object if it doesn't exist and open it for reading and writing
+        Set permissions for the shared memory object using S_IRUSR | S_IWUSR
+        Store the file descriptor returned by shm_open in fd
+    Set the size of the shared memory object using ftruncate with fd and data_size
+
+    Map the shared memory object into the process's address space using mmap:
+        Pass NULL as the starting address
+        Pass data_size as the length of the mapping
+        Set PROT_READ | PROT_WRITE as the memory protection
+        Set MAP_SHARED as the type of the mapping
+        Pass fd and 0 as the file descriptor and offset respectively
+        Store the pointer to the mapped memory in shared_data
+
+    Create a semaphore using sem_open:
+        Use "sem" as the name of the semaphore
+        Use O_CREAT flag to create the semaphore if it doesn't exist
+        Set permissions for the semaphore using 0644
+        Initialize the semaphore value to 1
+        Store the semaphore pointer returned by sem_open in sem
+
+    Initialize shared_data->consumer, shared_data->producer, and shared_data->size to 0
+
+    Fork a child process and store the process ID in pid
+    If pid equals 0 (child process):
+        Call producer function
+        Exit the child process
+
+    Fork another child process and store the process ID in pid
+    If pid equals 0 (child process):
+        Call producer function
+        Exit the child process
+
+    Call consumer function
+
+    Close the semaphore sem using sem_close
+
+    Unlink the semaphore sem using sem_unlink:
+        Pass "sem" as the name of the semaphore to sem_unlink
+        If sem_unlink returns a negative value, print an error message and exit the program
+
+    Unmap the shared memory using munmap:
+        Pass shared_data as the starting address of the mapped memory
+        Pass data_size as the length of the mapped memory
+        If munmap returns a negative value, print an error message and exit the program
+
+    Close the file descriptor fd using close:
+        If close returns a negative value, print an error message and exit the program
+
+    Unlink the shared memory object using shm_unlink:
+        Pass "/pl4ex12" as the name of the shared memory object to shm_unlink
+        If shm_unlink returns a negative value, print an error message and exit the program
+
+    Return 0 to indicate successful execution of the program
+
+
+PATTERN 
+
+The code demonstrates the classic producer-consumer
+ problem using shared memory and 
+ semaphores for synchronization and mutual exclusion.
+The code implements an active waiting mechanism using 
+semaphores to ensure mutual exclusion and 
+synchronization between 
+the producer and consumer processes. 
+It uses shared memory to allow communication 
+and data sharing between the processes.

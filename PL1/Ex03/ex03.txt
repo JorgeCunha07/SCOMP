@@ -1,0 +1,19 @@
+3. Analyse the following code.
+
+int main(void) {
+fork(); fork(); fork();
+printf("SCOMP!\n");
+}
+
+a) How many processes are created by this code?
+2^3 = 8,será sempre 2^n n equivale o número de forks.
+
+b) Draw a process tree that describes the processes created.
+
+
+
+
+ 
+
+c) How many times is “SCOMP” printed?
+8,7 filhos e o processo original

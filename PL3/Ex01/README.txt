@@ -1,0 +1,1 @@
+Todos os exercicios da pl 3 o make file esta preparado para mac os nao windows.

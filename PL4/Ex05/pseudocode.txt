@@ -1,0 +1,58 @@
+PSEUDOCODE
+Initialize variables and resources:
+    - Declare sem_t variables: semaforo1, semaforo2, semaforo3
+    - Declare pid_t variable: pid
+
+Create semaphores:
+    - Call sem_open("semaforo1", O_CREAT, S_IRUSR | S_IWUSR, 0)
+        - If sem_open fails, print error message and exit
+    - Call sem_open("semaforo2", O_CREAT, S_IRUSR | S_IWUSR, 0)
+        - If sem_open fails, print error message and exit
+    - Call sem_open("semaforo3", O_CREAT, S_IRUSR | S_IWUSR, 0)
+        - If sem_open fails, print error message and exit
+
+Create child processes:
+    - Loop for i from 0 to CHILD_PROCESSES
+        - Set pid as fork()
+        - If pid is 0, it's a child process
+            - If i is 0
+                - Print "Sistemas "
+                - Flush the stdout buffer
+                - Call sem_post(semaforo2) to allow other processes to proceed
+                - Call sem_wait(semaforo1) to block the process
+                - Print "a "
+                - Call sem_post(semaforo2) to allow other processes to proceed
+                - Exit the child process
+            - Else if i is 1
+                - Call sem_wait(semaforo2) to block the process
+                - Print "de "
+                - Flush the stdout buffer
+                - Call sem_post(semaforo3) to allow other processes to proceed
+                - Call sem_wait(semaforo2) to block the process
+                - Print "melhor "
+                - Call sem_post(semaforo3) to allow other processes to proceed
+                - Exit the child process
+            - Else if i is 2
+                - Call sem_wait(semaforo3) to block the process
+                - Print "Computadores - "
+                - Flush the stdout buffer
+                - Call sem_post(semaforo1) to allow other processes to proceed
+                - Call sem_wait(semaforo3) to block the process
+                - Print "disciplina! "
+                - Exit the child process
+
+Close and unlink semaphores:
+    - Call sem_close(semaforo1)
+    - Call sem_close(semaforo2)
+    - Call sem_close(semaforo3)
+    - Call sem_unlink("semaforo1")
+    - Call sem_unlink("semaforo2")
+    - Call sem_unlink("semaforo3")
+
+Return 0 to indicate successful execution
+
+PATTERN
+
+The waiting mechanism used in the  code can be classified as a combination of active and passive waiting.
+In the code, three child processes are created, and each process performs a specific task in a particular order. 
+The child processes synchronize their execution using semaphores (semaforo1, semaforo2, and semaforo3) to control the order of execution and ensure mutual exclusion.

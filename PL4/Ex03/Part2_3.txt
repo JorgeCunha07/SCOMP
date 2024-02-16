@@ -1,0 +1,64 @@
+PSEUDOCODE
+Initialize variables and resources:
+    - Declare variables: t, string, aux, fd, fd_aux, data_size, sem, p
+    - Declare character arrays: string, aux
+    - Declare integers: fd, fd_aux, data_size
+    - Declare timespec: t
+    - Declare sem_t: sem
+    - Declare pid_t: p
+
+Create shared memory for storing strings:
+    - Set fd as shm_open("/Ex3", O_CREAT | O_TRUNC | O_RDWR, S_IRUSR | S_IWUSR)
+        - If shm_open fails, print error message and exit
+    - Set data_size as sizeof(string) * TOTAL_STRINGS
+    - Call ftruncate(fd, data_size)
+        - If ftruncate fails, print error message and exit
+    - Map shared memory to strings array:
+        - Set strings as mmap(NULL, data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0)
+        - If mmap fails, print error message and exit
+
+Create shared memory for auxiliary storage:
+    - Set fd_aux as shm_open("/Ex3_helper", O_CREAT | O_TRUNC | O_RDWR, S_IRUSR | S_IWUSR)
+        - If shm_open fails, print error message and exit
+    - Call ftruncate(fd_aux, sizeof(int))
+        - If ftruncate fails, print error message and exit
+    - Map shared memory to size integer:
+        - Set size as mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED, fd_aux, 0)
+        - If mmap fails, print error message and exit
+    - Set *(size) as 0 (initialize the size)
+
+Create a semaphore:
+    - Call sem_open("semaforo", O_CREAT, S_IRUSR | S_IWUSR, 1)
+        - If sem_open fails, print error message and exit
+
+Set random seed:
+    - Call srand(time(NULL))
+
+Set the waiting time to 12 seconds:
+    - Set t.tv_sec as 12
+
+Create child processes:
+    - Loop for i from 0 to CHILD_PROCESSES
+        - Set p as fork()
+        - If p is 0, it's a child process
+            - Loop forever
+                - If *(size) equals 49, exit the child process
+                - If sem_timedwait(sem, &t) returns -1, print "O tempo de espera foi ultrapassado" and exit
+                - Generate a random number r from 0 to 8
+                - If r is less than or equal to 2 and *(size) is not 0, decrement *(size)
+                - Otherwise, if r is greater than 2 and *(size) is not 49, add a new string to strings and increment *(size)
+                - Sleep for a random duration from 1 to 5 seconds
+                - Call sem_post(sem) to release the semaphore
+
+Wait for child processes to finish:
+    - Loop for j from 0 to CHILD_PROCESSES
+        - Call wait(NULL) to wait for any child process to finish
+
+Print the stored strings:
+    - Loop for k from 0 to TOTAL_STRINGS
+        - Print strings[k] and *(size)
+
+Return 0 to indicate successful execution
+
+PATTERN
+The waiting mechanism used in the code can be classified as active waiting.

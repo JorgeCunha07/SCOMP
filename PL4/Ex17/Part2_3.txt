@@ -1,0 +1,77 @@
+PSEUDOCODE
+
+Define constants:
+    - Define TOTAL_SENSORS as the total number of sensors
+    - Define TOTAL_MEASUREMENTS as the total number of measurements for each sensor
+
+Define a struct to hold sensor data:
+    - Define a struct named "sensors" with two fields:
+        - measurements: an array of integers to store the measurements for each sensor
+        - alarmTotal: an integer to store the total number of sensors in alarm state
+
+Define a function to generate random measurements:
+    - The function takes parameters: sensors_info (pointer to sensors struct), sensor_index, sem_mem, sem_show_info, sem_wait_read (pointers to semaphores)
+    - The function generates random measurements for a given sensor_index and updates the sensors_info struct accordingly
+    - If an alarm state is detected, it updates the alarmTotal field and signals the sem_show_info semaphore
+    - If the alarm state is resolved, it updates the alarmTotal field and signals the sem_show_info semaphore
+    - The function loops for a specified number of measurements and sleeps for 1 second between each measurement
+    - Finally, it exits the process
+
+In the main function:
+    - Declare variables:
+        - pid_t variable: p
+        - Integer variables: fd, data_size, alarmTotal_aux, measurementsReceived, maxMeasurements
+        - Pointers to semaphores: sem_mem, sem_show_info, sem_wait_read
+
+    - Create shared memory for sensors data:
+        - Create shared memory for "/shm17" using shm_open with read-write permissions
+        - Truncate the shared memory object to the size of a sensors struct
+        - Map the shared memory object into the address space of the process
+        - Initialize the alarmTotal field of the sensors struct to 0
+
+    - Create semaphores:
+        - Create "sem17_mem" semaphore using sem_open with initial value 1
+        - Create "sem17_show_info" semaphore using sem_open with initial value 0
+        - Create "sem17_wait_read" semaphore using sem_open with initial value 0
+
+    - Fork child processes to generate random measurements:
+        - For each sensor index from 0 to TOTAL_SENSORS:
+            - Fork a child process
+            - If the process is a child:
+                - Call the generate_random_measurements function with the appropriate arguments
+
+    - If the process is the parent:
+        - Initialize variables: measurementsReceived = 0, maxMeasurements = TOTAL_MEASUREMENTS * TOTAL_SENSORS
+
+        - Start a loop to receive and display sensor data:
+            - Wait on the "sem_show_info" semaphore
+            - Check if the alarmTotal field has changed
+            - If it has changed, print the total number of sensors in alarm state
+            - Signal the "sem_wait_read" semaphore and wait on the "sem_show_info" semaphore
+            - Print the measurements for each sensor
+            - Signal the "sem_wait_read" semaphore
+            - Increment the measurementsReceived counter
+
+        - Wait for all child processes to complete:
+            - For each sensor index from 0 to TOTAL_SENSORS:
+                - Call wait(NULL) to wait for the child process to finish
+
+        - Cleanup and exit:
+            - Unlink and close the semaphores and shared memory objects
+            - Exit the process
+
+
+PATTERN
+
+In this case, the waiting mechanism used in the code includes a combination of active and passive waiting.
+
+Active Waiting:
+
+The processes actively wait for certain conditions to be satisfied by repeatedly checking those conditions using loops.
+For example, the code uses a loop with the condition while (measurementsReceived != maxMeasurements) to actively wait until all measurements from all sensors are received.
+Additionally, there are active waiting loops using conditions like while (alarmTotal_aux != sensors_info->alarmTotal) to actively wait for changes in the alarm state.
+Passive Waiting:
+
+The processes rely on external mechanisms, such as semaphores, to wait for events or signals.
+For example, the processes wait on semaphores like sem_show_info and sem_wait_read to be signaled or released before proceeding to the next steps.
+The processes call sem_wait() to passively wait for a semaphore to be available, indicating that they can proceed.

@@ -1,0 +1,39 @@
+a)
+❯ make run
+./Ex08
+PID = 3924
+Parent PID = 3923
+PID = 3925
+Waiting... (for PID=3925)
+Enter Loop...
+^Z
+[1]  + 3922 suspended  make run
+❯ ps
+  PID TTY          TIME CMD
+ 3732 pts/1    00:00:00 zsh
+ 3745 pts/1    00:00:00 zsh
+ 3774 pts/1    00:00:00 zsh
+ 3776 pts/1    00:00:00 zsh
+ 3777 pts/1    00:00:00 gitstatusd-linu
+ 3922 pts/1    00:00:00 make
+ 3923 pts/1    00:00:01 Ex08
+ 3924 pts/1    00:00:00 Ex08 <defunct>
+ 3929 pts/1    00:00:00 ps
+
+No they aren't, as you can see above the pid 3925 isn't present, that's because the parent process acknowledged its termination.
+
+b) 
+The pid 3924 became a zombie and is listed as a <defunct> as you can see above, that's because the parent process didn't acknowledged its termination.
+
+c)
+❯ kill -KILL 3923
+❯ ps
+  PID TTY          TIME CMD
+ 3732 pts/1    00:00:00 zsh
+ 3745 pts/1    00:00:00 zsh
+ 3774 pts/1    00:00:00 zsh
+ 3776 pts/1    00:00:00 zsh
+ 3777 pts/1    00:00:00 gitstatusd-linu
+ 3922 pts/1    00:00:00 make
+ 3923 pts/1    00:00:01 Ex08 <defunct>
+ 4294 pts/1    00:00:00 ps

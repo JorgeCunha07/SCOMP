@@ -1,0 +1,30 @@
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+int main(void) {
+	
+	int x = 1;
+	pid_t p = fork();
+	
+	if (p == 0) {
+		x = x+1;
+		printf("1. x = %d\n", x);
+	} else {
+		x = x-1;
+		printf("2. x = %d\n", x);
+	}
+	printf("3. %d; x = %d\n", p, x);
+} 
+
+1)a)
+O valor de p não será igual a 0 devidoa pid_t p ser 1234
+2. x = 0
+3. 1234; x = 0
+1. x = 2
+3. 0; x = 2
+
+A ordem poderá ser esta como tambem ser outra vai depender dos processos,mas o valores presentes são estes.
+
+b)Não,pois nos so iremos ver a linha 9 antes da linha 11 quando não estivermos no processo filho,mas poderá tambem
+acontecer devido aos processos serem concorrentes.

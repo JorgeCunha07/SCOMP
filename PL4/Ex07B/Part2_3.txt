@@ -1,0 +1,49 @@
+PSEUDOCODE
+
+Define the functions:
+    - buy_chips(): Prints "Buying chips!"
+    - buy_beer(): Prints "Buying beer!"
+    - eat_and_drink(): Prints "Eating and drinking!"
+
+Initialize variables and resources:
+    - Declare sem_t variable: sem
+    - Declare pid_t variable: p
+    - Declare int variable: sval
+
+Generate a random number:
+    - Set random as rand() % 6
+
+Create the semaphore:
+    - Call sem_open("semaforo", O_CREAT, S_IRUSR | S_IWUSR, 0)
+        - If sem_open fails, print error message and exit
+
+Create child processes:
+    - For i from 0 to CHILD_PROCESSES:
+        - Set p as fork()
+        - If p is -1, print error message and exit
+
+        If in the child process:
+            - Generate a random number r
+            - Sleep for r seconds
+            - Decide whether to execute buy_chips() or buy_beer() based on the value of r
+            - Increment the semaphore (sem_post)
+
+            - Repeat the following loop until the semaphore value is 6:
+                - Get the current value of the semaphore (sem_getvalue)
+                - If sem_getvalue fails, print error message and exit
+
+            - Execute the function eat_and_drink()
+            - Exit the child process
+
+Wait for all child processes to finish:
+    - For j from 0 to CHILD_PROCESSES:
+        - Call wait(NULL) to wait for a child process to finish
+
+Return 0 to indicate successful execution
+
+
+PATTERN
+
+In this case, the waiting mechanism used in the code can be considered as passive waiting.
+Passive waiting refers to a situation where a process blocks or goes to sleep until a certain condition is met. 
+In the code, the parent process passively waits for the child processes to increment the semaphore sem using sem_post(sem).

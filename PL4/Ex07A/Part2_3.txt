@@ -1,0 +1,47 @@
+PSEUDOCODE
+Initialize variables and resources:
+    - Declare sem_t variables: sem1, sem2
+    - Declare pid_t variable: p
+
+Generate a random number:
+    - Set random as rand() % 10
+
+Create semaphores:
+    - Call sem_open("semaforo1", O_CREAT, S_IRUSR | S_IWUSR, 0)
+        - If sem_open fails, print error message and exit
+    - Call sem_open("semaforo2", O_CREAT, S_IRUSR | S_IWUSR, 0)
+        - If sem_open fails, print error message and exit
+
+Create a child process:
+    - Set p as fork()
+    - If p is -1, print error message and exit
+
+Sleep for a random period of time:
+    - Sleep for the value of random
+
+If in the parent process:
+    - Print "buying chips!"
+    - Call sem_post(sem2) to increment the semaphore, allowing the child process to continue
+    - Call sem_wait(sem1) to wait for the child process to finish
+
+If in the child process:
+    - Print "buying beer!"
+    - Call sem_post(sem1) to increment the semaphore, allowing the parent process to continue
+    - Call sem_wait(sem2) to wait for the parent process to finish
+
+If in the parent process:
+    - Print "1 Eating and drinking!"
+
+If in the child process:
+    - Print "P2 Eating and drinking!"
+    - Exit the child process
+
+Wait for the child process to finish
+
+Return 0 to indicate successful execution
+
+PATTERN
+
+In this case, the waiting mechanism used in the code can be considered as active waiting.
+Active waiting refers to a situation where a process continuously checks for a certain condition to become true before proceeding. 
+In the code, the parent process and the child process both actively wait for each other by using semaphores (sem1 and sem2).

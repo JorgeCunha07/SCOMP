@@ -1,0 +1,39 @@
+CTRL-C: Interrupt (SIGINT) - sends an interrupt signal to the current process, causing it to terminate immediately.
+
+CTRL-Z: Suspend (SIGTSTP) - sends a suspend signal to the current process, causing it to pause and return control to the terminal.
+
+CTRL-D: End of File (EOF) - sends an end-of-file character to the current process, causing it to terminate gracefully.
+
+CTRL-A: Move cursor to beginning of line - moves the cursor to the beginning of the current input line.
+
+CTRL-E: Move cursor to end of line - moves the cursor to the end of the current input line.
+
+CTRL-K: Cut text from cursor to end of line - cuts (deletes) the text from the current cursor position to the end of the current input line.
+
+CTRL-U: Cut text from beginning of line to cursor - cuts (deletes) the text from the beginning of the current input line to the current cursor position.
+
+CTRL-L: Clear screen - clears the terminal screen and redraws the current input line at the top of the screen.
+
+CTRL-R: Reverse search - searches through the command history for a previously entered command that matches the current input line.
+
+CTRL-W: Cut previous word - cuts (deletes) the word immediately preceding the current cursor position.
+
+CTRL-T: Transpose characters - swaps the character before the cursor with the character under the cursor.
+
+CTRL-Y: Paste - pastes (inserts) the most recently cut or copied text at the current cursor position.
+
+CTRL-P: Previous command - displays the previous command in the command history.
+
+CTRL-N: Next command - displays the next command in the command history.
+
+CTRL-F: Move cursor forward - moves the cursor one character forward.
+
+CTRL-B: Move cursor backward - moves the cursor one character backward.
+
+CTRL-H or Backspace: Delete previous character - deletes the character immediately before the cursor.
+
+CTRL-O: Execute current line - executes the current input line, even if it is not complete.
+
+CTRL-\\: Quit (SIGQUIT) - sends a quit signal to the current process, causing it to terminate with a core dump.
+
+CTRL-S: Stop output - stops the output to the terminal, allowing you to read the current contents of the screen. Press CTRL-Q to resume output.

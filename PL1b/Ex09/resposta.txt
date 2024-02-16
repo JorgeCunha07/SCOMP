@@ -1,0 +1,67 @@
+(a) The usual terminal line discipline assigns control characters to the SIGINT SIGKILL and SIGTSTP
+signals:
+• CTRL-C sends SIGINT;
+• CTRL-\ sends SIGQUIT;
+• CTRL-Z sends SIGTSTP.
+Confirm these associations typing the command stty -a.
+Confirmed
+(b) Run the program. Once the program is executing, press CTRL-C.
+Explain what happened, considering the reception of the signal and the action performed.
+
+^Cmake: *** [makefile:11: run] Interrupt
+
+The Execution was interrupted.
+
+
+(c) Modify the program to print the “I won’t let the process end with CTRL-C!” message each time
+a SIGINT signal is received. Recompile and run the program, then test it by pressing CTRL-C
+several times.
+
+
+(d) On the terminal where the process was launched in b. press the CTRL-\ keys. What happened?
+For the explanation bear in mind the reception of a signal and action performed.
+
+Pressing CTRL-\ on a Unix or Linux terminal sends a SIGQUIT signal to the running process. 
+This signal is typically used to request the process to terminate and generate a core dump,
+ which can be useful for debugging.
+
+(e) Change the program so that each time a SIGQUIT signal is received the “I won’t let the process
+end by pressing CTRL-\!” message is displayed.
+Recompile and run the program and test by pressing several times CTRL-\.
+
+ I won t let I like signals 
+ I like signals 
+
+
+(f) Open another terminal and send a SIGINT signal to the target process using the kill command.
+What happened?
+
+When the SIGINT signal is received, the program will not terminate 
+because the SIGINT signal is being ignored by the first signal handler.
+ Therefore, nothing will happen in response to the SIGINT signal.
+
+(g) This time, send a SIGQUIT signal to the target process, instead. What happened?
+ 
+ When the SIGQUIT signal is received, the program will execute the handle_USR1 function, 
+ which will print the message "I won't let the process end by pressing CTRL-!" to the standard output.
+
+
+(h) Start the program again and perform as follows.
+i. Press CTRL-Z to suspend the process.
+
+
+ii. Access the process table with command ps to check the state of the process as well as its
+PID.
+
+
+iii. Execute the jobs command and check the job number (between square brackets) of the
+process.
+
+
+iv. Type the kill %1 command to terminate the suspended process.
+What is the meaning of %1 in this last command?
+In the command kill %1, the %1 refers to the job number of the suspended process 
+that was launched first in the current shell session.
+
+
+

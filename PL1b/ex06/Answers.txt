@@ -1,0 +1,9 @@
+Recall the meaning of global variables and static variables. Is it safe to use global or static variables
+inside a signal handler? Justify your answer.
+
+It is generally not safe to use global or static variables inside a signal handler in C because signal handlers run asynchronously.
+When a signal handler is executed, the state of the program is not guaranteed to be consistent.
+Example:
+If a signal is raised while a global variable is being modified, the signal handler may be executed before the modification is complete.
+
+To avoid these issues, it is recommended to use only local variables inside signal handlers.

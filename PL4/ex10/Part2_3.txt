@@ -1,0 +1,180 @@
+PSEUDOCODE
+
+Define N_PASSENGERS as 20
+Define N_DOORS as 3
+
+Define STARTING_EXCHANGES as 15
+Define EXCHANGES_A as 15
+Define EXCHANGES_B as 15
+
+Define Train structure:
+    Declare passengers as an integer
+    Declare exchanges as an integer
+
+Declare train as a pointer to Train structure
+
+Declare semC, semS, semM as pointers to sem_t structure
+
+Define openDoors function:
+    Iterate i from 0 to N_DOORS - 1:
+        Release the semaphore semC using sem_post
+
+Define nExits function with numExits as the parameter:
+    Iterate i from 0 to numExits - 1:
+        Release the semaphore semS using sem_post
+
+Define passenger function with id as the parameter:
+    Print "Passenger <id> is waiting."
+    Wait on the semaphore semC using sem_wait
+    Wait on the semaphore semM using sem_wait
+
+    If train->passengers equals N_PASSENGERS:
+        Release the semaphore semM using sem_post
+        Release the semaphore semC using sem_post
+        Exit the child process
+
+    Else:
+        Print "Passenger <id> is riding the train"
+        Increment train->passengers by 1
+        Increment train->exchanges by 1
+        Release the semaphore semM using sem_post
+
+    Sleep for 200 milliseconds
+
+    Release the semaphore semC using sem_post
+    Wait on the semaphore semS using sem_wait
+    Wait on the semaphore semC using sem_wait
+
+    Print "Passenger <id> left the train."
+    Wait on the semaphore semM using sem_wait
+    Decrement train->passengers by 1
+    Increment train->exchanges by 1
+    Release the semaphore semM using sem_post
+
+    Sleep for 200 milliseconds
+    Release the semaphore semC using sem_post
+    Exit the child process
+
+Define atStation function with exchanges as the parameter:
+    Declare nExchanges as an integer
+
+    Enter a loop:
+        Wait on the semaphore semM using sem_wait
+        Assign the value of train->exchanges to nExchanges
+        Release the semaphore semM using sem_post
+        Sleep for 200 milliseconds
+    Repeat the loop until nExchanges equals exchanges
+
+    Wait on the semaphore semM using sem_wait
+    Set train->exchanges to 0
+    Release the semaphore semM using sem_post
+
+Define main function:
+    Declare fd and data_size as integers
+    Create a shared memory object using shm_open:
+        Use "/pl4ex10" as the name of the shared memory object
+        Use O_CREAT flag to create the shared memory object if it doesn't exist
+        Set permissions for the shared memory object using S_IRUSR | S_IWUSR
+        Store the file descriptor returned by shm_open in fd
+    Set the size of the shared memory object using ftruncate with fd and data_size
+
+    Map the shared memory object into the process's address space using mmap:
+        Pass NULL as the starting address
+        Pass data_size as the length of the mapping
+        Set PROT_READ | PROT_WRITE as the memory protection
+        Set MAP_SHARED as the type of the mapping
+        Pass fd and 0 as the file descriptor and offset respectively
+        Store the pointer to the mapped memory in train
+
+    Create three semaphores using sem_open:
+        Use "semC" as the name of the first semaphore
+        Use "semS" as the name of the second semaphore
+        Use "semM" as the name of the third semaphore
+        Use O_CREAT flag to create the semaphores if they don't exist
+        Set permissions for the semaphores using 0644
+        Store the semaphore pointers returned by sem_open in semC, semS, and semM
+
+    Set train->passengers to 0
+
+    Release the semaphore semM using sem_post
+    Call openDoors function
+    Iterate i from 1 to 15:
+        If fork returns 0 (child process):
+            Call passenger function with i as the argument
+
+    Call atStation function with STARTING_EXCHANGES as the argument
+
+    Print "Train departs with 15 passengers"
+    Sleep for 200 milliseconds
+    Print "Train arrives at station A"
+    Call openDoors function
+    Call nExits function with 5 as the argument
+
+    Iterate i from 16 to 35:
+        If fork returns 0 (child process):
+            Call passenger function with i as the argument
+
+    Call atStation function with EXCHANGES_A as the argument
+
+    Print "Train departs"
+    Sleep for 200 milliseconds
+    Print "Train arrives at station B"
+    Call openDoors function
+    Call nExits function with 10 as the argument
+
+    Iterate i from 36 to 40:
+        If fork returns 0 (child process):
+            Call passenger function with i as the argument
+
+    Call atStation function with EXCHANGES_B as the argument
+
+    Print "Train departs"
+    Sleep for 200 milliseconds
+    Print "Train arrives to final destination"
+    Call openDoors function
+    Call nExits function with N_PASSENGERS as the argument
+
+    Declare numPassengers as an integer
+
+    Enter a loop:
+        Wait on the semaphore semM using sem_wait
+        Assign the value of train->passengers to numPassengers
+        Release the semaphore semM using sem_post
+        Sleep for 200 milliseconds
+    Repeat the loop until numPassengers equals 0
+
+    Close the semaphores semC, semS, and semM using sem_close
+
+    Unlink the semaphore semC using sem_unlink:
+        Pass "semC" as the name of the semaphore to sem_unlink
+        If sem_unlink returns a negative value, print an error message and exit the program
+
+    Unlink the semaphore semS using sem_unlink:
+        Pass "semS" as the name of the semaphore to sem_unlink
+        If sem_unlink returns a negative value, print an error message and exit the program
+
+    Unlink the semaphore semM using sem_unlink:
+        Pass "semM" as the name of the semaphore to sem_unlink
+        If sem_unlink returns a negative value, print an error message and exit the program
+
+    Unmap the shared memory using munmap:
+        Pass train as the starting address of the mapped memory
+        Pass data_size as the length of the mapped memory
+        If munmap returns a negative value, print an error message and exit the program
+
+    Unlink the shared memory object using shm_unlink:
+        Pass "/pl4ex10" as the name of the shared memory object to shm_unlink
+        If shm_unlink returns a negative value, print an error message and exit the program
+
+    Return 0 to indicate successful execution of the program
+
+PATTERN 
+
+The code demonstrates active waiting behavior 
+as the passengers and the train process 
+continuously check the status of semaphores
+ and shared memory using sem_wait() and sem_post() 
+ calls and actively loop to check for 
+ specific conditions to proceed. 
+ They do not passively wait but actively monitor 
+ and respond to synchronization mechanisms.

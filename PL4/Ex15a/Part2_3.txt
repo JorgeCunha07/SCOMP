@@ -1,0 +1,56 @@
+PSEUDOCODE
+
+Define constants:
+    - Define MAX as 10
+    - Define CLIENT as 20
+
+Declare variables:
+    - Declare pid_t variable: p
+    - Declare integers: fd, fd2, data_size
+    - Declare sem_t pointers: semaforoIn, semaforoOut
+
+Create shared memory for "sharedMemoryTotal":
+    - Create shared memory for "sharedMemoryTotal" using shm_open with read-write permissions
+    - Truncate the shared memory object to the size of an integer
+    - Map the shared memory object into the address space of the process
+    - Initialize the shared memory value to 0
+
+Create shared memory for "sharedMemoryIn":
+    - Create shared memory for "sharedMemoryIn" using shm_open with read-write permissions
+    - Truncate the shared memory object to the size of an integer
+    - Map the shared memory object into the address space of the process
+    - Initialize the shared memory value to 0
+
+Create semaphores:
+    - Create "clientsIn" semaphore using sem_open with initial value 1
+    - Create "clientsOut" semaphore using sem_open with initial value 0
+
+Create client processes:
+    - For i from 1 to CLIENT:
+        - Set pid as fork()
+        - If pid is 0 (in the child process):
+            - Wait until the shared memory value "sharedMemoryIn" equals i - 1
+            - If "sharedMemoryTotal" equals MAX:
+                - Post on "clientsOut" semaphore to signal a client leaving
+            - Wait on "clientsIn" semaphore to synchronize client entry
+            - Print the message indicating the client is inside
+            - Increment the "sharedMemoryTotal" value by 1
+            - Increment the "sharedMemoryIn" value by 1
+            - Post on "clientsIn" semaphore to allow the next client to enter
+            - Wait on "clientsOut" semaphore to synchronize client exit
+            - Print the message indicating the client is outside
+            - Decrement the "sharedMemoryTotal" value by 1
+            - Post on "clientsIn" semaphore to allow the next client to enter
+            - Exit the child process
+
+Wait for all child processes to complete:
+    - For j from 0 to CLIENT:
+        - Wait for any child process to finish
+
+Return 0 to indicate successful execution
+
+PATTERN
+
+In this case, the waiting mechanism used in the code can be considered as passive waiting.
+Passive waiting refers to a situation where a process waits for an event to occur without actively checking or polling for it. 
+Instead, the process relies on some external mechanism to notify or wake it up when the event happens.

@@ -1,0 +1,43 @@
+a)
+The sigaction function is most suitable to handle signals because 
+it provides more control over the behavior of the signal handler, 
+including the ability to specify which signals should be blocked 
+while the handler is executing, and the ability to set flags 
+that determine how signals are handled. 
+The signal function, on the other hand, 
+provides a simpler interface for handling signals but does not offer as much control.
+
+b)
+    int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);
+
+
+signum: This is the signal number that the sigaction() function is being called for. For example, SIGINT is the signal that is sent to a process when the user presses Ctrl+C. The signal number can also be specified as an integer.
+
+act: A pointer to a struct sigaction that describes the new behavior to be associated with the specified signal. 
+
+This structure has the following members:
+1-sa_handler: This member specifies the new action for the signal. It can be set to a function pointer, SIG_DFL (to use the default behavior), or SIG_IGN (to ignore the signal).
+2-sa_mask: This member specifies a set of signals that should be blocked while the signal handler is running. This prevents other signals from interrupting the handler. The set of signals is specified using a sigset_t data type, which is a bitmask of signals.
+3-sa_flags: This member specifies various flags that modify the behavior of the signal handler. Possible values include:
+4-SA_RESTART: If this flag is set, then system calls that are interrupted by the signal will be restarted automatically after the signal handler returns.
+5-SA_NODEFER: If this flag is set, then the signal that triggered the handler will not be blocked while the handler is running.
+6-SA_ONESHOT: If this flag is set, then the signal handler will be restored to its default behavior after it is executed once.
+7-SA_SIGINFO: If this flag is set, then the sa_sigaction member of the struct sigaction structure will be used as the signal handler instead of sa_handler. 
+This allows more information about the signal to be passed to the handler.
+8-sa_sigaction: This member specifies a pointer to a function that should be called when the signal is received, if the SA_SIGINFO flag is set.
+}
+
+oldact: If non-NULL, this parameter is used to return the previous behavior associated with the signal. 
+The struct sigaction pointed to by oldact will be filled in with the previous signal handler, mask, and flags.
+
+Possible values for sa_handler include:
+
+A function pointer: This function will be called when the signal is received.
+SIG_DFL: This indicates that the default action for the signal should be taken. For most signals, this terminates the process.
+SIG_IGN: This indicates that the signal should be ignored.
+Possible values for sa_flags include:
+
+SA_RESTART: If this flag is set, then system calls that are interrupted by the signal will be restarted automatically after the signal handler returns.
+SA_NODEFER: If this flag is set, then the signal that triggered the handler will not be blocked while the handler is running.
+SA_ONESHOT: If this flag is set, then the signal handler will be restored to its default behavior after it is executed once.
+SA_SIGINFO: If this flag is set, then the sa_sigaction member of the struct sigaction structure will be used as the signal handler instead of sa_handler. This allows more information about the signal to be passed to the handler.

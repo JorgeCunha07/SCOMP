@@ -1,0 +1,49 @@
+PSEUDOCODE
+
+Declare necessary libraries and headers
+
+Define main function with arguments argc and argv
+    If argc is not equal to 3
+        Print an error message
+        Exit the program with status 1
+
+    Declare variables:
+        p as pid_t
+        total_childs as integer and initialize it with the converted value of argv[1]
+        sval as integer and initialize it with 0
+        time_spent as integer
+        exec_time as integer and initialize it with the converted value of argv[2]
+        start and end as struct timeval
+        sem as semaphore pointer
+
+    Create a semaphore named "sema" with initial value 0 and assign it to sem
+
+    Get the current time in start using gettimeofday()
+
+    Iterate i from 0 to total_childs - 1
+        Fork a child process and assign the result to p
+        If p is 0 (child process)
+            Sleep for exec_time microseconds
+            Increment the value of sem by 1 using sem_post()
+            Exit the child process
+
+    Loop while sval is not equal to total_childs
+        If sem_getvalue() returns -1 (indicating an error)
+            Print an error message
+            Exit the program with status 1
+
+    Get the current time in end using gettimeofday()
+
+    Calculate the time spent in microseconds:
+        time_spent = ((end.tv_sec - start.tv_sec) * 1000000) + (end.tv_usec - start.tv_usec)
+
+    Print the time spent
+
+    Return 0 to indicate successful execution of the program
+
+
+PATTERN
+
+The  code can be classified as passive waiting because it waits for child processes to increment the value of the semaphore before continuing execution. 
+The parent process enters a loop and checks the value of the semaphore until it reaches the desired value (total_childs), 
+ßindicating that all child processes have completed their execution.

@@ -1,0 +1,7 @@
+11)Using sigprocmask(), sigismember() and sigfillset() functions implement a function that lists all
+signals blocked when a process receives the SIGUSR1 signal. 
+a)Are all signals blocked? Justify your answer
+by mentioning those which are not eventually blocked.
+
+The implementation blocks all signals except for SIGUSR1,because we deleted for not to be blocked,
+it cannot block or catch critical signals such as SIGKILL, SIGSTOP, and SIGCONT.

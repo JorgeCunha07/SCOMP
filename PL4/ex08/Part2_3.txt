@@ -1,0 +1,70 @@
+PSEUDOCODE
+
+Declare necessary libraries and headers
+
+Define constants:
+    NAME_SIZE as 50
+    ADDR_SIZE as 100
+    MAX_RECS as 100
+
+Define struct Client
+    Declare fields:
+        number as integer
+        name as character array of size NAME_SIZE
+        address as character array of size ADDR_SIZE
+
+Define struct Recorded_Data
+    Declare field:
+        saved_data as an array of Client of size MAX_RECS
+        index as integer
+
+Define main function without arguments
+    Declare variables:
+        sem as semaphore pointer
+        fd as integer
+        data_size as integer and initialize it with sizeof(Recorded_Data)
+        shared_data as pointer to Recorded_Data
+
+    Open a semaphore with name "/sem", create it if it doesn't exist, with read and write permissions, and assign it to sem
+
+    Open a shared memory object named "/pl4ex08" with read and write permissions, and assign the file descriptor to fd
+    Set the size of the shared memory object to data_size using ftruncate()
+
+    Map the shared memory object into the address space of the calling process and assign the pointer to shared_data using mmap()
+
+    Wait on the semaphore using sem_wait()
+
+    Declare variable i as an integer
+
+    If shared_data's index is 0
+        Print "No data found"
+    Else
+        Iterate i from 0 to shared_data's index - 1
+            Assign a pointer to the i-th element of shared_data's saved_data to c
+            Print "Client info:"
+            Print "Number: <c->number>"
+            Print "Name: <c->name>"
+            Print "Address: <c->address>"
+            Print a newline
+
+    Release the semaphore using sem_post()
+
+    If sem_unlink("sem") returns a value less than 0
+        Print an error message "Unlink sem error"
+        Exit the program with status 1
+
+    If munmap() returns a non-zero value
+        Print an error message "Munmap error"
+        Exit the program with status 1
+
+    Return 0 to indicate successful execution of the program
+
+
+PATTERN 
+
+
+The code can be classified as passive waiting because it uses the sem_wait() function to 
+wait for the semaphore to be available before proceeding with further execution. 
+The process waits for the semaphore to be signaled by another process, 
+indicating that it can access the shared data. During this waiting period, the process does not actively perform any other tasks.
+
